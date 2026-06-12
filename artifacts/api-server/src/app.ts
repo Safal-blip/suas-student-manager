@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
@@ -10,7 +10,7 @@ const PgSession = ConnectPgSimple(session);
 const app: Express = express();
 
 // Skip pinoHttp for now - direct logging use karo
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next) => {
   logger.info({
     method: req.method,
     url: req.url?.split("?")[0],
