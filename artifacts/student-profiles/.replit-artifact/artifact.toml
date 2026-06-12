@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Student Profile Manager"
+version = "1.0.0"
+id = "artifacts/student-profiles"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21164
+
+[services.development]
+run = "pnpm --filter @workspace/student-profiles run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/student-profiles", "run", "build" ]
+publicDir = "artifacts/student-profiles/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21164"
+BASE_PATH = "/"

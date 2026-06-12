@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Student Profile Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student profile operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,160 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List students
+      description: Returns a list of students with optional search and filter
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by name or email
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, graduated, suspended]
+          description: Filter by status
+        - name: major
+          in: query
+          schema:
+            type: string
+          description: Filter by major
+        - name: year
+          in: query
+          schema:
+            type: string
+            enum: [freshman, sophomore, junior, senior, graduate]
+          description: Filter by academic year
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/stats:
+    get:
+      operationId: getStudentStats
+      tags: [students]
+      summary: Get dashboard statistics
+      description: Returns aggregate stats about all students
+      responses:
+        "200":
+          description: Student stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentStats"
+
+  /students/recent:
+    get:
+      operationId: getRecentStudents
+      tags: [students]
+      summary: Get recently added students
+      description: Returns the 5 most recently enrolled students
+      responses:
+        "200":
+          description: Recent students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentUpdate"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +189,187 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Student:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - status
+        - year
+        - major
+        - enrollmentDate
+        - createdAt
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        dateOfBirth:
+          type: ["string", "null"]
+        enrollmentDate:
+          type: string
+        graduationYear:
+          type: ["integer", "null"]
+        major:
+          type: string
+        gpa:
+          type: ["number", "null"]
+        status:
+          type: string
+          enum: [active, inactive, graduated, suspended]
+        year:
+          type: string
+          enum: [freshman, sophomore, junior, senior, graduate]
+        photoUrl:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    StudentInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - major
+        - year
+        - enrollmentDate
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        enrollmentDate:
+          type: string
+        graduationYear:
+          type: integer
+        major:
+          type: string
+        gpa:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive, graduated, suspended]
+        year:
+          type: string
+          enum: [freshman, sophomore, junior, senior, graduate]
+        photoUrl:
+          type: string
+        address:
+          type: string
+        bio:
+          type: string
+
+    StudentUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        enrollmentDate:
+          type: string
+        graduationYear:
+          type: integer
+        major:
+          type: string
+        gpa:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive, graduated, suspended]
+        year:
+          type: string
+          enum: [freshman, sophomore, junior, senior, graduate]
+        photoUrl:
+          type: string
+        address:
+          type: string
+        bio:
+          type: string
+
+    StudentStats:
+      type: object
+      required:
+        - total
+        - byStatus
+        - byYear
+        - byMajor
+        - averageGpa
+      properties:
+        total:
+          type: integer
+        byStatus:
+          type: object
+          properties:
+            active:
+              type: integer
+            inactive:
+              type: integer
+            graduated:
+              type: integer
+            suspended:
+              type: integer
+          required: [active, inactive, graduated, suspended]
+        byYear:
+          type: object
+          properties:
+            freshman:
+              type: integer
+            sophomore:
+              type: integer
+            junior:
+              type: integer
+            senior:
+              type: integer
+            graduate:
+              type: integer
+          required: [freshman, sophomore, junior, senior, graduate]
+        byMajor:
+          type: array
+          items:
+            type: object
+            required: [major, count]
+            properties:
+              major:
+                type: string
+              count:
+                type: integer
+        averageGpa:
+          type: ["number", "null"]
