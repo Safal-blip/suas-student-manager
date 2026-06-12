@@ -26,6 +26,7 @@ router.get("/students/stats", async (req, res): Promise<void> => {
 
   let gpaSum = 0;
   let gpaCount = 0;
+  const gpaRanges = { "Below 2.5": 0, "2.5 – 3.0": 0, "3.0 – 3.5": 0, "3.5 – 4.0": 0 };
 
   for (const s of rows) {
     byStatus[s.status as keyof typeof byStatus]++;
@@ -34,6 +35,10 @@ router.get("/students/stats", async (req, res): Promise<void> => {
     if (s.gpa != null) {
       gpaSum += s.gpa;
       gpaCount++;
+      if (s.gpa < 2.5) gpaRanges["Below 2.5"]++;
+      else if (s.gpa < 3.0) gpaRanges["2.5 – 3.0"]++;
+      else if (s.gpa < 3.5) gpaRanges["3.0 – 3.5"]++;
+      else gpaRanges["3.5 – 4.0"]++;
     }
   }
 
@@ -41,12 +46,15 @@ router.get("/students/stats", async (req, res): Promise<void> => {
     .map(([major, count]) => ({ major, count }))
     .sort((a, b) => b.count - a.count);
 
+  const gpaDistribution = Object.entries(gpaRanges).map(([range, count]) => ({ range, count }));
+
   const stats = {
     total: rows.length,
     byStatus,
     byYear,
     byMajor,
     averageGpa: gpaCount > 0 ? Math.round((gpaSum / gpaCount) * 100) / 100 : null,
+    gpaDistribution,
   };
 
   res.json(GetStudentStatsResponse.parse(stats));
@@ -60,11 +68,7 @@ router.get("/students/recent", async (req, res): Promise<void> => {
     .limit(5);
 
   res.json(GetRecentStudentsResponse.parse(
-    students.map(s => ({
-      ...s,
-      createdAt: s.createdAt.toISOString(),
-      enrollmentDate: s.enrollmentDate,
-    }))
+    students.map(s => ({ ...s, createdAt: s.createdAt.toISOString() }))
   ));
 });
 
@@ -93,12 +97,7 @@ router.get("/students", async (req, res): Promise<void> => {
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(studentsTable.createdAt));
 
-  res.json(ListStudentsResponse.parse(
-    students.map(s => ({
-      ...s,
-      createdAt: s.createdAt.toISOString(),
-    }))
-  ));
+  res.json(ListStudentsResponse.parse(students.map(s => ({ ...s, createdAt: s.createdAt.toISOString() }))));
 });
 
 router.post("/students", async (req, res): Promise<void> => {
@@ -113,10 +112,7 @@ router.post("/students", async (req, res): Promise<void> => {
     .values({ ...parsed.data, status: parsed.data.status ?? "active" })
     .returning();
 
-  res.status(201).json(GetStudentResponse.parse({
-    ...student,
-    createdAt: student.createdAt.toISOString(),
-  }));
+  res.status(201).json(GetStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
 router.get("/students/:id", async (req, res): Promise<void> => {
@@ -126,20 +122,14 @@ router.get("/students/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [student] = await db
-    .select()
-    .from(studentsTable)
-    .where(eq(studentsTable.id, params.data.id));
+  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, params.data.id));
 
   if (!student) {
     res.status(404).json({ error: "Student not found" });
     return;
   }
 
-  res.json(GetStudentResponse.parse({
-    ...student,
-    createdAt: student.createdAt.toISOString(),
-  }));
+  res.json(GetStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
 router.patch("/students/:id", async (req, res): Promise<void> => {
@@ -166,10 +156,7 @@ router.patch("/students/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(UpdateStudentResponse.parse({
-    ...student,
-    createdAt: student.createdAt.toISOString(),
-  }));
+  res.json(UpdateStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
 router.delete("/students/:id", async (req, res): Promise<void> => {
@@ -179,10 +166,7 @@ router.delete("/students/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [student] = await db
-    .delete(studentsTable)
-    .where(eq(studentsTable.id, params.data.id))
-    .returning();
+  const [student] = await db.delete(studentsTable).where(eq(studentsTable.id, params.data.id)).returning();
 
   if (!student) {
     res.status(404).json({ error: "Student not found" });

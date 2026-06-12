@@ -8,6 +8,7 @@
 import type { StudentStatsByMajorItem } from './studentStatsByMajorItem';
 import type { StudentStatsByStatus } from './studentStatsByStatus';
 import type { StudentStatsByYear } from './studentStatsByYear';
+import type { StudentStatsGpaDistributionItem } from './studentStatsGpaDistributionItem';
 
 export interface StudentStats {
   total: number;
@@ -16,4 +17,5 @@ export interface StudentStats {
   byMajor: StudentStatsByMajorItem[];
   /** @nullable */
   averageGpa: number | null;
+  gpaDistribution: StudentStatsGpaDistributionItem[];
 }

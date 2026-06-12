@@ -13,6 +13,54 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface SuccessResponse {
+  message: string;
+}
+
+export type AuthUserRole = typeof AuthUserRole[keyof typeof AuthUserRole];
+
+
+export const AuthUserRole = {
+  admin: 'admin',
+  student: 'student',
+  faculty: 'faculty',
+} as const;
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: AuthUserRole;
+  createdAt: string;
+}
+
+export type SignupInputRole = typeof SignupInputRole[keyof typeof SignupInputRole];
+
+
+export const SignupInputRole = {
+  admin: 'admin',
+  student: 'student',
+  faculty: 'faculty',
+} as const;
+
+export interface SignupInput {
+  /** @minLength 2 */
+  name: string;
+  email: string;
+  /** @minLength 8 */
+  password: string;
+  role: SignupInputRole;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface ForgotPasswordInput {
+  email: string;
+}
+
 export type StudentStatus = typeof StudentStatus[keyof typeof StudentStatus];
 
 
@@ -160,6 +208,11 @@ export type StudentStatsByMajorItem = {
   count: number;
 };
 
+export type StudentStatsGpaDistributionItem = {
+  range: string;
+  count: number;
+};
+
 export interface StudentStats {
   total: number;
   byStatus: StudentStatsByStatus;
@@ -167,24 +220,78 @@ export interface StudentStats {
   byMajor: StudentStatsByMajorItem[];
   /** @nullable */
   averageGpa: number | null;
+  gpaDistribution: StudentStatsGpaDistributionItem[];
+}
+
+export interface LeaveType {
+  id: number;
+  name: string;
+  totalDays: number;
+}
+
+export type LeaveApplicationStatus = typeof LeaveApplicationStatus[keyof typeof LeaveApplicationStatus];
+
+
+export const LeaveApplicationStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface LeaveApplication {
+  id: number;
+  applicantName: string;
+  applicantEmail: string;
+  leaveTypeName: string;
+  leaveTypeId?: number;
+  fromDate: string;
+  toDate: string;
+  totalDays: number;
+  reason: string;
+  status: LeaveApplicationStatus;
+  createdAt: string;
+}
+
+export interface LeaveInput {
+  applicantName: string;
+  applicantEmail: string;
+  leaveTypeId: number;
+  fromDate: string;
+  toDate: string;
+  totalDays: number;
+  reason: string;
+}
+
+export type LeaveStatusUpdateStatus = typeof LeaveStatusUpdateStatus[keyof typeof LeaveStatusUpdateStatus];
+
+
+export const LeaveStatusUpdateStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface LeaveStatusUpdate {
+  status: LeaveStatusUpdateStatus;
+}
+
+export type LeaveStatsByTypeItem = {
+  name: string;
+  count: number;
+};
+
+export interface LeaveStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  byType: LeaveStatsByTypeItem[];
 }
 
 export type ListStudentsParams = {
-/**
- * Search by name or email
- */
 search?: string;
-/**
- * Filter by status
- */
 status?: ListStudentsStatus;
-/**
- * Filter by major
- */
 major?: string;
-/**
- * Filter by academic year
- */
 year?: ListStudentsYear;
 };
 
@@ -207,5 +314,18 @@ export const ListStudentsYear = {
   junior: 'junior',
   senior: 'senior',
   graduate: 'graduate',
+} as const;
+
+export type ListLeavesParams = {
+status?: ListLeavesStatus;
+};
+
+export type ListLeavesStatus = typeof ListLeavesStatus[keyof typeof ListLeavesStatus];
+
+
+export const ListLeavesStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
 } as const;
 

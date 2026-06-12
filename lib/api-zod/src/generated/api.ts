@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,14 +17,79 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Returns a list of students with optional search and filter
+ * @summary Create a new account
+ */
+export const signupBodyNameMin = 2;
+
+export const signupBodyPasswordMin = 8;
+
+
+
+export const SignupBody = zod.object({
+  "name": zod.string().min(signupBodyNameMin),
+  "email": zod.string(),
+  "password": zod.string().min(signupBodyPasswordMin),
+  "role": zod.enum(['admin', 'student', 'faculty'])
+})
+
+
+/**
+ * @summary Login to account
+ */
+export const LoginBody = zod.object({
+  "email": zod.string(),
+  "password": zod.string()
+})
+
+export const LoginResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['admin', 'student', 'faculty']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Logout
+ */
+export const LogoutResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Get current user
+ */
+export const GetMeResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['admin', 'student', 'faculty']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Request password reset
+ */
+export const ForgotPasswordBody = zod.object({
+  "email": zod.string()
+})
+
+export const ForgotPasswordResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
  * @summary List students
  */
 export const ListStudentsQueryParams = zod.object({
-  "search": zod.coerce.string().optional().describe('Search by name or email'),
-  "status": zod.enum(['active', 'inactive', 'graduated', 'suspended']).optional().describe('Filter by status'),
-  "major": zod.coerce.string().optional().describe('Filter by major'),
-  "year": zod.enum(['freshman', 'sophomore', 'junior', 'senior', 'graduate']).optional().describe('Filter by academic year')
+  "search": zod.coerce.string().optional(),
+  "status": zod.enum(['active', 'inactive', 'graduated', 'suspended']).optional(),
+  "major": zod.coerce.string().optional(),
+  "year": zod.enum(['freshman', 'sophomore', 'junior', 'senior', 'graduate']).optional()
 })
 
 export const ListStudentsResponseItem = zod.object({
@@ -75,7 +139,6 @@ export const CreateStudentBody = zod.object({
 
 
 /**
- * Returns aggregate stats about all students
  * @summary Get dashboard statistics
  */
 export const GetStudentStatsResponse = zod.object({
@@ -97,12 +160,15 @@ export const GetStudentStatsResponse = zod.object({
   "major": zod.string(),
   "count": zod.number()
 })),
-  "averageGpa": zod.number().nullable()
+  "averageGpa": zod.number().nullable(),
+  "gpaDistribution": zod.array(zod.object({
+  "range": zod.string(),
+  "count": zod.number()
+}))
 })
 
 
 /**
- * Returns the 5 most recently enrolled students
  * @summary Get recently added students
  */
 export const GetRecentStudentsResponseItem = zod.object({
@@ -206,6 +272,95 @@ export const UpdateStudentResponse = zod.object({
  */
 export const DeleteStudentParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List available leave types
+ */
+export const ListLeaveTypesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "totalDays": zod.number()
+})
+export const ListLeaveTypesResponse = zod.array(ListLeaveTypesResponseItem)
+
+
+/**
+ * @summary List leave applications
+ */
+export const ListLeavesQueryParams = zod.object({
+  "status": zod.enum(['pending', 'approved', 'rejected']).optional()
+})
+
+export const ListLeavesResponseItem = zod.object({
+  "id": zod.number(),
+  "applicantName": zod.string(),
+  "applicantEmail": zod.string(),
+  "leaveTypeName": zod.string(),
+  "leaveTypeId": zod.number().optional(),
+  "fromDate": zod.string(),
+  "toDate": zod.string(),
+  "totalDays": zod.number(),
+  "reason": zod.string(),
+  "status": zod.enum(['pending', 'approved', 'rejected']),
+  "createdAt": zod.string()
+})
+export const ListLeavesResponse = zod.array(ListLeavesResponseItem)
+
+
+/**
+ * @summary Apply for leave
+ */
+export const ApplyForLeaveBody = zod.object({
+  "applicantName": zod.string(),
+  "applicantEmail": zod.string(),
+  "leaveTypeId": zod.number(),
+  "fromDate": zod.string(),
+  "toDate": zod.string(),
+  "totalDays": zod.number(),
+  "reason": zod.string()
+})
+
+
+/**
+ * @summary Get leave statistics
+ */
+export const GetLeaveStatsResponse = zod.object({
+  "total": zod.number(),
+  "pending": zod.number(),
+  "approved": zod.number(),
+  "rejected": zod.number(),
+  "byType": zod.array(zod.object({
+  "name": zod.string(),
+  "count": zod.number()
+}))
+})
+
+
+/**
+ * @summary Update leave application status
+ */
+export const UpdateLeaveStatusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateLeaveStatusBody = zod.object({
+  "status": zod.enum(['pending', 'approved', 'rejected'])
+})
+
+export const UpdateLeaveStatusResponse = zod.object({
+  "id": zod.number(),
+  "applicantName": zod.string(),
+  "applicantEmail": zod.string(),
+  "leaveTypeName": zod.string(),
+  "leaveTypeId": zod.number().optional(),
+  "fromDate": zod.string(),
+  "toDate": zod.string(),
+  "totalDays": zod.number(),
+  "reason": zod.string(),
+  "status": zod.enum(['pending', 'approved', 'rejected']),
+  "createdAt": zod.string()
 })
 
 

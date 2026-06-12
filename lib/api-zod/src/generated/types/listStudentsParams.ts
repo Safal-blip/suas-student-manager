@@ -9,20 +9,8 @@ import type { ListStudentsStatus } from './listStudentsStatus';
 import type { ListStudentsYear } from './listStudentsYear';
 
 export type ListStudentsParams = {
-/**
- * Search by name or email
- */
 search?: string;
-/**
- * Filter by status
- */
 status?: ListStudentsStatus;
-/**
- * Filter by major
- */
 major?: string;
-/**
- * Filter by academic year
- */
 year?: ListStudentsYear;
 };
