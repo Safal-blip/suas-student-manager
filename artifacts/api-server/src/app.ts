@@ -10,25 +10,26 @@ const PgSession = ConnectPgSimple(session);
 
 const app: Express = express();
 
-const pinoMiddleware = pinoHttp({
-  logger,
-  serializers: {
-    req(req: Request) {
-      return {
-        id: (req as any).id,
-        method: req.method,
-        url: req.url?.split("?")[0],
-      };
+// Configure pino-http middleware properly
+app.use(
+  pinoHttp({
+    logger: logger as any,
+    serializers: {
+      req(req: any) {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url?.split("?")[0],
+        };
+      },
+      res(res: any) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
     },
-    res(res: Response) {
-      return {
-        statusCode: res.statusCode,
-      };
-    },
-  },
-}) as any;
-
-app.use(pinoMiddleware);
+  } as any)
+);
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
