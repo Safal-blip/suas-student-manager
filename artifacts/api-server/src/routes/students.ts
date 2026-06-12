@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, ilike, and, desc, sql, type SQL } from "drizzle-orm";
 import { db, studentsTable } from "@workspace/db";
 import {
@@ -17,7 +17,7 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/students/stats", async (req, res): Promise<void> => {
+router.get("/students/stats", async (req: Request, res: Response): Promise<void> => {
   const rows = await db.select().from(studentsTable);
 
   const byStatus = { active: 0, inactive: 0, graduated: 0, suspended: 0 };
@@ -60,7 +60,7 @@ router.get("/students/stats", async (req, res): Promise<void> => {
   res.json(GetStudentStatsResponse.parse(stats));
 });
 
-router.get("/students/recent", async (req, res): Promise<void> => {
+router.get("/students/recent", async (req: Request, res: Response): Promise<void> => {
   const students = await db
     .select()
     .from(studentsTable)
@@ -72,7 +72,7 @@ router.get("/students/recent", async (req, res): Promise<void> => {
   ));
 });
 
-router.get("/students", async (req, res): Promise<void> => {
+router.get("/students", async (req: Request, res: Response): Promise<void> => {
   const query = ListStudentsQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: query.error.message });
@@ -100,7 +100,7 @@ router.get("/students", async (req, res): Promise<void> => {
   res.json(ListStudentsResponse.parse(students.map(s => ({ ...s, createdAt: s.createdAt.toISOString() }))));
 });
 
-router.post("/students", async (req, res): Promise<void> => {
+router.post("/students", async (req: Request, res: Response): Promise<void> => {
   const parsed = CreateStudentBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -115,7 +115,7 @@ router.post("/students", async (req, res): Promise<void> => {
   res.status(201).json(GetStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
-router.get("/students/:id", async (req, res): Promise<void> => {
+router.get("/students/:id", async (req: Request, res: Response): Promise<void> => {
   const params = GetStudentParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -132,7 +132,7 @@ router.get("/students/:id", async (req, res): Promise<void> => {
   res.json(GetStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
-router.patch("/students/:id", async (req, res): Promise<void> => {
+router.patch("/students/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateStudentParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -159,7 +159,7 @@ router.patch("/students/:id", async (req, res): Promise<void> => {
   res.json(UpdateStudentResponse.parse({ ...student, createdAt: student.createdAt.toISOString() }));
 });
 
-router.delete("/students/:id", async (req, res): Promise<void> => {
+router.delete("/students/:id", async (req: Request, res: Response): Promise<void> => {
   const params = DeleteStudentParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

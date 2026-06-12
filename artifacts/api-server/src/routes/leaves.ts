@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, leaveTypesTable, leaveApplicationsTable } from "@workspace/db";
 import {
@@ -14,12 +14,12 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/leave-types", async (_req, res): Promise<void> => {
+router.get("/leave-types", async (_req: Request, res: Response): Promise<void> => {
   const types = await db.select().from(leaveTypesTable).orderBy(leaveTypesTable.id);
   res.json(ListLeaveTypesResponse.parse(types.map(t => ({ id: t.id, name: t.name, totalDays: t.totalDays }))));
 });
 
-router.get("/leaves/stats", async (_req, res): Promise<void> => {
+router.get("/leaves/stats", async (_req: Request, res: Response): Promise<void> => {
   const leaves = await db.select().from(leaveApplicationsTable);
   const types = await db.select().from(leaveTypesTable);
 
@@ -38,7 +38,7 @@ router.get("/leaves/stats", async (_req, res): Promise<void> => {
   res.json(GetLeaveStatsResponse.parse({ total: leaves.length, pending, approved, rejected, byType }));
 });
 
-router.get("/leaves", async (req, res): Promise<void> => {
+router.get("/leaves", async (req: Request, res: Response): Promise<void> => {
   const query = ListLeavesQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: query.error.message });
@@ -78,7 +78,7 @@ router.get("/leaves", async (req, res): Promise<void> => {
   );
 });
 
-router.post("/leaves", async (req, res): Promise<void> => {
+router.post("/leaves", async (req: Request, res: Response): Promise<void> => {
   const parsed = ApplyForLeaveBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -104,7 +104,7 @@ router.post("/leaves", async (req, res): Promise<void> => {
   );
 });
 
-router.patch("/leaves/:id", async (req, res): Promise<void> => {
+router.patch("/leaves/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateLeaveStatusParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
